@@ -439,13 +439,21 @@ def wait_for_capacity(tracked_ids, max_concurrent, dry_run, poll_seconds):
         time.sleep(poll_seconds)
 
 
-def _outputs_exist(output_dir, pdb_glob):
-    odir = Path(output_dir)
-    return bool(list(odir.glob(pdb_glob)) or list(odir.glob("**/*.pdb")))
+def _job_finished(job_id):
+    """Return True if the job is no longer in the SLURM queue."""
+    if job_id is None:
+        return True
+    result = subprocess.run(
+        ["squeue", "-h", "-j", job_id, "-o", "%i"],
+        capture_output=True, text=True, check=False,
+    )
+    if result.returncode != 0:
+        return True
+    return job_id not in result.stdout
 
 
 def wait_for_round(batches, pdb_glob, poll_seconds, timeout_hours, dry_run):
-    """Poll until every submitted batch output_dir has PDB files, or timeout."""
+    """Poll until every submitted batch job has left the SLURM queue, or timeout."""
     if dry_run:
         return
     pending = {
@@ -455,16 +463,16 @@ def wait_for_round(batches, pdb_glob, poll_seconds, timeout_hours, dry_run):
     }
     deadline = time.time() + timeout_hours * 3600.0
     while pending:
-        done = [d for d in pending if _outputs_exist(d, pdb_glob)]
+        done = [d for d in pending if _job_finished(pending[d])]
         for d in done:
             del pending[d]
         if not pending:
             break
         if time.time() >= deadline:
-            LOG.warning("Timeout: %d batch output dirs still pending", len(pending))
+            LOG.warning("Timeout: %d batch jobs still pending", len(pending))
             break
         active = active_job_count(list(pending.values()))
-        LOG.info("Waiting: %d dirs pending, %d jobs active...", len(pending), active)
+        LOG.info("Waiting: %d jobs pending, %d active...", len(pending), active)
         time.sleep(poll_seconds)
 
 
