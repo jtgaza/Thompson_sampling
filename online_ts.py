@@ -358,7 +358,8 @@ def generate_slurm_script(input_path, output_dir, job_name, slurm_cfg):
     input_path may be a FASTA file (ColabFold generates MSAs) or a directory
     of A3M files (ColabFold uses precomputed MSAs).
     """
-    input_path = Path(input_path)
+    input_path = Path(input_path).resolve()
+    output_dir = Path(output_dir).resolve()
     extra = slurm_cfg.get("extra_colabfold_args", "").strip()
     extra_arg_line = f"{extra} \\\n    " if extra else ""
     module_setup = slurm_cfg.get("module_setup", "").strip() or "# No module setup configured."
