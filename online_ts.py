@@ -810,7 +810,7 @@ def main():
             "max_concurrent_jobs": 4,
             "msa_template": "",  # empty → FASTA mode; set to path for precomputed MSA
         },
-        allowed_binder_rules={"any", "top1", "majority"},
+        allowed_binder_rules={"any", "top1", "majority", "four_of_five"},
     )
 
     if args.seqs_per_job is not None:
