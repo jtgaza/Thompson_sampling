@@ -7,7 +7,6 @@
   "topk_clusters": 50,
   "random_state": 0,
   "models_per_query": 5,
-  "pdb_glob": "*.pdb",
   "poll_seconds": 120,
   "job_timeout_hours": 24.0,
   "plddt_threshold": 70.0,
