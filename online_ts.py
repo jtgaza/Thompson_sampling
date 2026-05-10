@@ -452,7 +452,7 @@ def _job_finished(job_id):
     return job_id not in result.stdout
 
 
-def wait_for_round(batches, pdb_glob, poll_seconds, timeout_hours, dry_run):
+def wait_for_round(batches, poll_seconds, timeout_hours, dry_run):
     """Poll until every submitted batch job has left the SLURM queue, or timeout."""
     if dry_run:
         return
@@ -797,7 +797,6 @@ def main():
             "alloc": "proportional",
             "random_state": 0,
             "models_per_query": 5,
-            "pdb_glob": "*.pdb",
             "poll_seconds": 60,
             "job_timeout_hours": 72.0,
             "plddt_threshold": 70.0,
@@ -942,7 +941,7 @@ def main():
             LOG.info("Resuming incomplete round %d...", round_index)
             batches = prior_round.get("batches", [])
             wait_for_round(
-                batches, cfg_ns.pdb_glob, cfg_ns.poll_seconds,
+                batches, cfg_ns.poll_seconds,
                 cfg_ns.job_timeout_hours, args.dry_run,
             )
             metric_records, failed_ids = collect_round_results(
@@ -996,7 +995,7 @@ def main():
         save_checkpoint(checkpoint_path, state)
 
         wait_for_round(
-            batches, cfg_ns.pdb_glob, cfg_ns.poll_seconds,
+            batches, cfg_ns.poll_seconds,
             cfg_ns.job_timeout_hours, args.dry_run,
         )
         metric_records, failed_ids = collect_round_results(
@@ -1065,7 +1064,7 @@ def main():
         save_checkpoint(checkpoint_path, state)
 
         wait_for_round(
-            batches, cfg_ns.pdb_glob, cfg_ns.poll_seconds,
+            batches, cfg_ns.poll_seconds,
             cfg_ns.job_timeout_hours, args.dry_run,
         )
         metric_records, failed_ids = collect_round_results(
